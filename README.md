@@ -1,17 +1,23 @@
 # Introduction to Reinforcement Learning with Lunar Lander
 
-Reinforcement Learning (RL) is a fascinating subset of machine learning where an agent learns to make optimal decisions by interacting with its environment to maximize cumulative rewards. Imagine training a dog to perform tricks: each time the dog successfully performs a trick, you reward it with a treat. Over time, the dog learns to associate the trick with the reward and performs it more frequently. This simple yet powerful concept is the foundation of reinforcement learning.
+**Reinforcement Learning (RL)** is a fascinating subset of machine learning where an agent learns to make optimal decisions by interacting with its environment to maximize **cumulative rewards**. <br>Imagine training a dog to perform tricks: each time the dog successfully performs a trick, you reward it with a treat. Over time, the dog learns to associate the trick with the reward and performs it more frequently. This simple yet powerful concept is the foundation of reinforcement learning.
 
-In this tutorial, we will embark on an exciting journey to teach an AI agent how to land on the moon. We will achieve this by setting up an environment using Stable Baselines 3 and OpenAI Gymnasium to run the Lunar Lander simulation. Along the way, we will delve into essential RL concepts such as action space, observation space, and the Proximal Policy Optimization (PPO) algorithm.
+In this tutorial, we will embark on an exciting journey to teach an **AI agent** how to land on the moon. We will achieve this by setting up an environment using **Stable Baselines 3** and **OpenAI Gymnasium** to run the Lunar Lander simulation. Along the way, we will delve into essential RL concepts such as action space, observation space, and the **Proximal Policy Optimization (PPO)** algorithm.
 
 ![alt text](Resources/lunar_lander_intro.gif)
 
 ## Contents
 - [Understanding the Lunar Lander Environment](#Understanding-the-Lunar-Lander-Environment)
+- [How is RL Trained](#How-is-an-RL-Agent-Trained)
+- [Setting up Lunar Lander Environment](#Setting-up-Lunar-Lander-Environment)
+- [Conclusion](#Conclusion)
+
 
 ## Understanding the Lunar Lander Environment
 
 The Lunar Lander environment is a classic control problem where the goal is to land a lunar module safely on the moon's surface. The environment provides a simulation where the agent (the lunar module) can perform actions to control its movement.
+
+![action space](Resources/space.png)
 
 ### Action Space
 
@@ -81,10 +87,22 @@ Proximal Policy Optimization, or PPO, is a method used in reinforcement learning
 
 Now that we understand what Reinforcement Learning is, how the Proximal Policy Optimization (PPO) algorithm works, and the specifics of the Lunar Lander environment, it's time to set up the environment and train our agent to land on the moon.
 
+### Step 0: Setting up Virtual Environment
+Before we start, we need to create a virtual environemt and activate it.
+```bash
+python -m venv lunar-lander
+```
+- Note that the name of the virtual environment is `lunar-lander`. You can choose any name you like.
+
+Activate the Environment:
+```bash
+.\lunar-lander\Scripts\activate
+```
+
 ### Step 1: Installing Necessary Libraries
 First, ensure you have the necessary libraries installed. Open your terminal and run:
 ```bash
-pip install stable-baselines3 gymnasium gymnasium[box2d]
+pip install stable-baselines3 gymnasium[box2d] numpy==1.26.4
 ```
 
 ### Step 2: Importing Libraries
@@ -97,7 +115,7 @@ from stable_baselines3 import PPO
 ### Step 3: Create the Lunar Lander Environment
 We'll create an instance of the Lunar Lander environment using OpenAI Gymnasium.
 ```python
-env = gym.make("LunarLander-v2)
+env = gym.make("LunarLander-v2")
 ```
 
 ### Step 4: Initialize the PPO Model
@@ -105,12 +123,14 @@ Initialize the PPO model with the environment. This model will be used to train 
 ```python
 model = PPO("MlpPolicy", env, verbose=1)
 ```
+- Here `verbose=1` will display the training logs.
 
 ### Step 5: Train the PPO Model
 Now, let's train the PPO model. This step can take some time depending on your computer's performance:
 ```python
-model.learn(total_timesteps=100000)
+model.learn(total_timesteps=1000000)
 ```
+- The `total_timesteps` parameter specifies the total number of timesteps the model will be trained for. You can increase or decrease this value based on your requirements.
 
 ### Step 6: Save the trained model
 After training, it's a good practice to save the trained model so you can load it later without retraining:
@@ -124,36 +144,61 @@ model = PPO.load("ppo-lunar-lander")
 
 ### Step 7: Evaluate the Model
 Evaluate the performance of the trained model by running a few episodes and observing the total rewards:
+(More the Reward, better the performance)
 ```python
 episodes = 10
 for episode in range(episodes):
-    obs = env.reset()
+    obs, info = env.reset()
     done = False
     total_reward = 0
     
     while not done:
         action, _states = model.predict(obs)
-        obs, reward, done, info = env.step(action)
+        obs, reward, done, info, truncated = env.step(action)
         total_reward += reward
     
     print(f"Episode: {episode + 1}, Total Reward: {total_reward}")
-```
-
-### Step 8: Render the Environment
-Finally, let's render the environment to visually observe how the agent performs:
-```python
-obs = env.reset()
-done = False
-
-while not done:
-    action, _states = model.predict(obs)
-    obs, reward, done, info = env.step(action)
-    env.render()
 
 env.close()
 ```
 
-## Conclusion
-In this section, we set up the Lunar Lander environment and trained an agent using the PPO algorithm. By following these steps, you should now have a trained agent capable of landing on the moon's surface. Experiment with different algorithms, hyperparameters, and reward structures to further improve your agent's performance.
+### Step 8: Render the Environment
+Finally, let's render the environment to visually observe how the agent performs:
+For this, create a new Python file.
 
-Happy learning!
+1. Add required libraries.
+```python
+import gymnasium as gym
+from stable_baselines3 import PPO
+```
+2.  Initialize the environment
+```python
+env = gym.make("LunarLander-v2", render_mode="human")
+```
+- here `render_mode="human"` will render the environment in a seperate window for us to view.
+3. Load the trained model
+```python
+model = PPO.load("ppo_lunar_lander")
+```
+4. Run the environment
+```python
+obs, info = env.reset()
+done = False
+
+while not done:
+    action, _states = model.predict(obs)
+    obs, reward, done, info, truncated = env.step(action)
+    env.render()
+
+env.close()
+```
+![lunar lander](Resources/fingif.gif)
+
+## Conclusion
+In conclusion, we have explored the fascinating world of Reinforcement Learning (RL) and its application in training an AI agent to land on the moon using the Lunar Lander environment. We have learned about essential RL concepts such as action space, observation space, and the Proximal Policy Optimization (PPO) algorithm.
+
+By following the step-by-step guide, you can set up the Lunar Lander environment, train the PPO model, save and load the trained model, evaluate its performance, and even render the environment for visual observation.
+
+But the fun doesn't stop here! OpenAI Gymnasium provides a wide range of environments for you to explore and experiment with. You can visit the [OpenAI Gymnasium website](https://gym.openai.com/) to discover other exciting environments and try out different algorithms to solve various RL problems.
+
+I hope this tutorial has sparked your curiosity and inspired you to dive deeper into the world of RL. Happy coding and happy exploring!
